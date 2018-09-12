@@ -1,1 +1,2 @@
-This is just a repo for all my ddos amplification codes
+NTP, ICMP DDoS methods so far
+This is a repository for DDoS amplification scripts I programmed.
