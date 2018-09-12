@@ -3,7 +3,7 @@ from scapy.all import *
 
 try:
 	ip = raw_input("Target: ")
-  altIP = raw_input("Spoofed IP: ")
+	altIP = raw_input("Spoofed IP: ")
 	threads = input("Threads: ")
 
 	def icmpflood():
