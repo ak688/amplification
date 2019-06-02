@@ -9,7 +9,7 @@ threads = int(input("Threads: "))
 timer = float(input("Time(S): "))
 
 class main:
-	def __init__(self, ip, threads, spoof, timer):
+	def __init__(self, ip, spoof, threads, timer):
 		self.ip = ip
 		self.spoof = spoof
 		self.threads = threads
